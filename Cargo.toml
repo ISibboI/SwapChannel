@@ -1,6 +1,7 @@
 [package]
 name = "swap_channel"
 description = "A parallel communication channel based on mem::swap."
+authors = ["Sebastian Schmidt <isibboi@gmail.com>"]
 version = "0.0.1"
 edition = "2021"
 license = "BSD-2-Clause"
