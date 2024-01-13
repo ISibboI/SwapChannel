@@ -52,39 +52,64 @@ pub struct ChannelKey<'master_key> {
 }
 
 pub struct Channel<Data> {
-    current: Data,
-    previous: Data,
+    data1: Data,
+    data2: Data,
 }
 
+#[must_use]
 pub struct ChannelPointer<Data> {
     channel: Box<Channel<Data>>,
 }
 
+#[must_use]
 pub struct DataPointer<Data> {
     data: *mut Data,
 }
 
 impl<Data> Channel<Data> {
     pub fn create(
-        current: Data,
-        previous: Data,
+        data1: Data,
+        data2: Data,
     ) -> (ChannelPointer<Data>, DataPointer<Data>, DataPointer<Data>) {
         let mut channel_pointer = ChannelPointer {
-            channel: Box::new(Channel { current, previous }),
+            channel: Box::new(Channel { data1, data2 }),
         };
-        let current_pointer = DataPointer {
-            data: (&mut channel_pointer.channel.current) as *mut Data,
+        let data_pointer1 = DataPointer {
+            data: (&mut channel_pointer.channel.data1) as *mut Data,
         };
-        let previous_pointer = DataPointer {
-            data: (&mut channel_pointer.channel.previous) as *mut Data,
+        let data_pointer2 = DataPointer {
+            data: (&mut channel_pointer.channel.data2) as *mut Data,
         };
-        (channel_pointer, current_pointer, previous_pointer)
+        (channel_pointer, data_pointer1, data_pointer2)
+    }
+
+    pub fn destroy(
+        channel_pointer: ChannelPointer<Data>,
+        data_pointer1: DataPointer<Data>,
+        data_pointer2: DataPointer<Data>,
+    ) {
+        let ChannelPointer { mut channel } = channel_pointer;
+        let channel_data_pointer1 = (&mut channel.data1) as *mut Data;
+        let channel_data_pointer2 = (&mut channel.data2) as *mut Data;
+        let DataPointer {
+            data: data_pointer1,
+        } = data_pointer1;
+        let DataPointer {
+            data: data_pointer2,
+        } = data_pointer2;
+
+        assert!(
+            (channel_data_pointer1 == data_pointer1 && channel_data_pointer2 == data_pointer2)
+                || (channel_data_pointer1 == data_pointer2
+                    && channel_data_pointer2 == data_pointer1)
+        )
     }
 }
 
 impl<Data> ChannelPointer<Data> {
     pub fn swap(&mut self, _key: ChannelKey) {
-        mem::swap(&mut self.channel.current, &mut self.channel.previous);
+        let channel: &mut Channel<Data> = &mut self.channel;
+        mem::swap(&mut channel.data1, &mut channel.data2);
     }
 }
 
@@ -100,11 +125,11 @@ impl<Data> DataPointer<Data> {
 
 #[cfg(test)]
 mod tests {
-    use crate::MasterKey;
+    use crate::{Channel, MasterKey};
 
     #[test]
-    #[should_panic]
     fn test() {
         let master_key = MasterKey::create();
+        let (channel_pointer, data_pointer1, data_pointer2) = Channel::create((), ());
     }
 }
