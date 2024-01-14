@@ -114,6 +114,15 @@ pub struct DataPointer<Data> {
     data: *mut Data,
 }
 
+/// An immutable pointer to one of the data fields in a channel.
+/// It can only be accessed using a [DataKey].
+///
+/// This type should always be destroyed via the [Channel::destroy_immutable] or [ChannelPointer::destroy_immutable] method to ensure soundness (at runtime).
+#[must_use]
+pub struct ImmutableDataPointer<Data> {
+    data: *const Data,
+}
+
 impl<Data> Channel<Data> {
     /// Create a channel and hand out three pointers to it.
     /// One [ChannelPointer] used to swap the content of the two `Data` fields,
@@ -160,6 +169,37 @@ impl<Data> Channel<Data> {
 
         (channel.data1, channel.data2)
     }
+
+    /// Destroys the channel linked with the pointers (see [Channel::create]).
+    ///
+    /// **Panics** if not all pointers point to the same channel.
+    pub fn destroy_immutable(
+        channel_pointer: ChannelPointer<Data>,
+        data_pointer1: DataPointer<Data>,
+        data_pointer2: impl IntoIterator<Item = ImmutableDataPointer<Data>>,
+    ) -> (Data, Data) {
+        let ChannelPointer { mut channel } = channel_pointer;
+        let channel_data_pointer1 = (&mut channel.data1) as *mut Data;
+        let channel_data_pointer2 = (&mut channel.data2) as *mut Data;
+        let DataPointer {
+            data: data_pointer1,
+        } = data_pointer1;
+
+        for data_pointer2 in data_pointer2 {
+            let ImmutableDataPointer {
+                data: data_pointer2,
+            } = data_pointer2;
+
+            assert!(
+                (channel_data_pointer1 == data_pointer1
+                    && channel_data_pointer2 as *const Data == data_pointer2)
+                    || (channel_data_pointer1 as *const Data == data_pointer2
+                        && channel_data_pointer2 == data_pointer1)
+            );
+        }
+
+        (channel.data1, channel.data2)
+    }
 }
 
 impl<Data> ChannelPointer<Data> {
@@ -177,6 +217,15 @@ impl<Data> ChannelPointer<Data> {
     ) -> (Data, Data) {
         Channel::destroy(self, data_pointer1, data_pointer2)
     }
+
+    /// Shorthand for [Channel::destroy_immutable].
+    pub fn destroy_immutable(
+        self,
+        data_pointer1: DataPointer<Data>,
+        data_pointer2: impl IntoIterator<Item = ImmutableDataPointer<Data>>,
+    ) -> (Data, Data) {
+        Channel::destroy_immutable(self, data_pointer1, data_pointer2)
+    }
 }
 
 impl<Data> DataPointer<Data> {
@@ -188,6 +237,19 @@ impl<Data> DataPointer<Data> {
     /// Get a mutable reference to the `Data` field pointed to by this pointer.
     pub fn get_mut(&mut self, _key: &DataKey) -> &mut Data {
         unsafe { &mut *self.data }
+    }
+
+    pub fn into_immutable(self) -> ImmutableDataPointer<Data> {
+        ImmutableDataPointer {
+            data: self.data as *const Data,
+        }
+    }
+}
+
+impl<Data> ImmutableDataPointer<Data> {
+    /// Get a reference to the `Data` field pointed to by this pointer.
+    pub fn get(&self, _key: &DataKey) -> &Data {
+        unsafe { &*self.data }
     }
 }
 
