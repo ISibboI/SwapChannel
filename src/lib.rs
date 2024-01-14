@@ -91,6 +91,7 @@ impl<'master_key> ChannelKey<'master_key> {
 /// and a third thread to swap the content of these `Data` fields, resulting in inter-thread communication.
 ///
 /// See [Channel::create] for more info.
+#[derive(Debug)]
 pub struct Channel<Data> {
     data1: Data,
     data2: Data,
@@ -100,6 +101,7 @@ pub struct Channel<Data> {
 /// It can only be accessed using a [ChannelKey].
 ///
 /// This type should always be destroyed via the [Channel::destroy] or [ChannelPointer::destroy] method to ensure soundness (at runtime).
+#[derive(Debug)]
 #[must_use]
 pub struct ChannelPointer<Data> {
     channel: Box<Channel<Data>>,
@@ -109,6 +111,7 @@ pub struct ChannelPointer<Data> {
 /// It can only be accessed using a [DataKey].
 ///
 /// This type should always be destroyed via the [Channel::destroy] or [ChannelPointer::destroy] method to ensure soundness (at runtime).
+#[derive(Debug)]
 #[must_use]
 pub struct DataPointer<Data> {
     data: *mut Data,
@@ -118,6 +121,7 @@ pub struct DataPointer<Data> {
 /// It can only be accessed using a [DataKey].
 ///
 /// This type should always be destroyed via the [Channel::destroy_immutable] or [ChannelPointer::destroy_immutable] method to ensure soundness (at runtime).
+#[derive(Debug)]
 #[must_use]
 pub struct ImmutableDataPointer<Data> {
     data: *const Data,
