@@ -12,10 +12,9 @@ static MASTER_KEY_EXISTS: AtomicBool = AtomicBool::new(false);
 /// but only at most one derived key can exist simultaneously,
 /// and specifically not both a data key and a channel key at the same time.
 pub struct MasterKey {
-    /// A meaningless private field to ensure that
-    /// this struct can only be constructed via its constructor.
-    #[allow(unused)]
-    dummy: (),
+    /// For debug purposes, multiple master keys can be created.
+    /// To prevent them from interfering with the "real" master key, we mark them as "unlimited".
+    unlimited: bool,
 }
 
 impl MasterKey {
@@ -27,7 +26,20 @@ impl MasterKey {
         assert!(!MASTER_KEY_EXISTS.swap(true, Ordering::Relaxed));
 
         // Return a new master key.
-        Self { dummy: () }
+        Self { unlimited: false }
+    }
+
+    /// Creates a new master key without checking if there already is one.
+    ///
+    /// # Safety
+    ///
+    /// This violates the "only one master key" constraint imposed by this crate and
+    /// thus may lead to undefined behavior when a channel is accessed by its
+    /// channel key and some data key at the same time.
+    ///
+    /// Use this only for testing and debugging purposes.
+    pub unsafe fn create_unlimited() -> Self {
+        Self { unlimited: true }
     }
 
     /// Get a unique data key from this master key.
@@ -50,9 +62,11 @@ impl MasterKey {
 impl Drop for MasterKey {
     /// After dropping a master key, a new one can be created again.
     fn drop(&mut self) {
-        // Assert that the master key exists
-        // and set it as not existing.
-        assert!(MASTER_KEY_EXISTS.swap(false, Ordering::Relaxed));
+        if !self.unlimited {
+            // Assert that the master key exists
+            // and set it as not existing.
+            assert!(MASTER_KEY_EXISTS.swap(false, Ordering::Relaxed));
+        }
     }
 }
 
