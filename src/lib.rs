@@ -220,6 +220,19 @@ impl<Data> Channel<Data> {
     }
 }
 
+impl<Data: Clone> Channel<Data> {
+    /// Create a channel and hand out three pointers to it.
+    /// One [ChannelPointer] used to swap the content of the two `Data` fields,
+    /// and two [DataPointer]s, one to each data field.
+    ///
+    /// In this constructor, both `Data` fields are initialised equally from the given `Data`.
+    pub fn create_equal(
+        data: Data,
+    ) -> (ChannelPointer<Data>, DataPointer<Data>, DataPointer<Data>) {
+        Self::create(data.clone(), data)
+    }
+}
+
 impl<Data> ChannelPointer<Data> {
     /// Swap the two `Data` fields in the channel.
     pub fn swap(&mut self, _key: &ChannelKey) {
