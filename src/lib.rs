@@ -135,7 +135,7 @@ pub struct DataPointer<Data> {
 /// It can only be accessed using a [DataKey].
 ///
 /// This type should always be destroyed via the [Channel::destroy_immutable] or [ChannelPointer::destroy_immutable] method to ensure soundness (at runtime).
-#[derive(Debug)]
+#[derive(Debug, Clone, Copy)]
 #[must_use]
 pub struct ImmutableDataPointer<Data> {
     data: *const Data,
