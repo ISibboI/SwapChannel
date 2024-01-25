@@ -23,6 +23,8 @@ impl MasterKey {
     pub fn create() -> Self {
         // Assert that the master key does not exist
         // and set it as existing.
+        // Using `Ordering::Relaxed` is fine here, since if the result is `true`,
+        // we anyways panic, and if the result is `false`, nothing happens.
         assert!(!MASTER_KEY_EXISTS.swap(true, Ordering::Relaxed));
 
         // Return a new master key.
@@ -65,6 +67,8 @@ impl Drop for MasterKey {
         if !self.unlimited {
             // Assert that the master key exists
             // and set it as not existing.
+            // Using `Ordering::Relaxed` is fine here, since if the result is `true`,
+            // we anyways panic, and if the result is `false`, nothing happens.
             assert!(MASTER_KEY_EXISTS.swap(false, Ordering::Relaxed));
         }
     }
