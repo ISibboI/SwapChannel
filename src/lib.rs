@@ -292,6 +292,14 @@ impl<Data> Clone for ImmutableDataPointer<Data> {
 
 impl<Data> Copy for ImmutableDataPointer<Data> {}
 
+unsafe impl<Data> Send for ChannelPointer<Data> {}
+unsafe impl<Data> Send for DataPointer<Data> {}
+unsafe impl<Data> Send for ImmutableDataPointer<Data> {}
+
+unsafe impl<Data> Sync for ChannelPointer<Data> {}
+unsafe impl<Data> Sync for DataPointer<Data> {}
+unsafe impl<Data> Sync for ImmutableDataPointer<Data> {}
+
 #[cfg(test)]
 mod tests {
     use crate::{Channel, MasterKey};
