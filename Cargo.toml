@@ -2,7 +2,7 @@
 name = "swap_channel"
 description = "A safe lock-free parallel communication channel based on mem::swap"
 authors = ["Sebastian Schmidt <isibboi@gmail.com>"]
-version = "0.2.6"
+version = "0.2.7"
 edition = "2021"
 license = "BSD-2-Clause"
 
