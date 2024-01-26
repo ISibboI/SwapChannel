@@ -304,13 +304,25 @@ unsafe impl<Data> Sync for ChannelPointer<Data> {}
 unsafe impl<Data> Sync for DataPointer<Data> {}
 unsafe impl<Data> Sync for ImmutableDataPointer<Data> {}
 
+/// Object-safe trait for [`ChannelPointer`]s.
+pub trait SwapChannel {
+    /// Perform the [`ChannelPointer::swap`] operation.
+    fn swap(&mut self, channel_key: &ChannelKey);
+}
+
+impl<Data> SwapChannel for ChannelPointer<Data> {
+    fn swap(&mut self, channel_key: &ChannelKey) {
+        ChannelPointer::swap(self, channel_key);
+    }
+}
+
 #[cfg(test)]
 mod tests {
-    use crate::{Channel, MasterKey};
+    use crate::{Channel, MasterKey, SwapChannel};
 
     #[test]
     fn test() {
-        let mut master_key = MasterKey::create();
+        let mut master_key = unsafe { MasterKey::create_unlimited() };
         let (mut channel_pointer, mut data_pointer1, data_pointer2) = Channel::create(0, 0);
 
         for _ in 0..3 {
@@ -325,5 +337,17 @@ mod tests {
         let (data1, data2) = Channel::destroy(channel_pointer, data_pointer1, data_pointer2);
         assert_eq!(data1, 2);
         assert_eq!(data2, 6);
+    }
+
+    #[test]
+    fn ensure_swap_channel_is_object_safe() {
+        let mut master_key = unsafe { MasterKey::create_unlimited() };
+        let (mut channel, data1, data2) = Channel::create(1, 2);
+        let dyn_channel: &mut dyn SwapChannel = &mut channel;
+
+        dyn_channel.swap(&master_key.get_channel_key());
+        assert_eq!(*data1.get(&master_key.get_data_key()), 2);
+        assert_eq!(*data2.get(&master_key.get_data_key()), 1);
+        Channel::destroy(channel, data1, data2);
     }
 }
