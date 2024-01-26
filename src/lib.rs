@@ -305,7 +305,7 @@ unsafe impl<Data> Sync for DataPointer<Data> {}
 unsafe impl<Data> Sync for ImmutableDataPointer<Data> {}
 
 /// Object-safe trait for [`ChannelPointer`]s.
-pub trait SwapChannel {
+pub trait SwapChannel: Send + Sync {
     /// Perform the [`ChannelPointer::swap`] operation.
     fn swap(&mut self, channel_key: &ChannelKey);
 }
