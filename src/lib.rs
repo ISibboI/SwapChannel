@@ -4,6 +4,7 @@ use std::sync::atomic::Ordering;
 
 static MASTER_KEY_EXISTS: AtomicBool = AtomicBool::new(false);
 
+pub mod directed;
 pub mod undirected;
 
 /// The master key.

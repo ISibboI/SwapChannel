@@ -3,7 +3,7 @@ use std::mem;
 use crate::{ChannelKey, DataKey};
 
 /// An undirected channel used for communication between threads.
-/// It holds to instances of `Data`, which can be accessed or swapped.
+/// It holds two instances of `Data`, which can be accessed or swapped.
 /// At any time, either references to `Data` can exist, or a swap operation can be performed.
 /// This allows to different threads to hold pointers to one of the `Data` fields each,
 /// and a third thread to swap the content of these `Data` fields, resulting in inter-thread communication.
@@ -41,7 +41,7 @@ pub struct UndirectedDataPointer<Data> {
 /// This type should always be destroyed via the [UndirectedChannel::destroy_immutable] or [UndirectedChannelPointer::destroy_immutable] method to ensure soundness (at runtime).
 #[derive(Debug)]
 #[must_use]
-pub struct ImmutableDataPointer<Data> {
+pub struct ImmutableUndirectedDataPointer<Data> {
     data: *const Data,
 }
 
@@ -102,7 +102,7 @@ impl<Data> UndirectedChannel<Data> {
     pub fn destroy_immutable(
         channel_pointer: UndirectedChannelPointer<Data>,
         data_pointer1: UndirectedDataPointer<Data>,
-        data_pointer2: impl IntoIterator<Item = ImmutableDataPointer<Data>>,
+        data_pointer2: impl IntoIterator<Item = ImmutableUndirectedDataPointer<Data>>,
     ) -> (Data, Data) {
         let UndirectedChannelPointer { mut channel } = channel_pointer;
         let channel_data_pointer1 = (&mut channel.data1) as *mut Data;
@@ -112,7 +112,7 @@ impl<Data> UndirectedChannel<Data> {
         } = data_pointer1;
 
         for data_pointer2 in data_pointer2 {
-            let ImmutableDataPointer {
+            let ImmutableUndirectedDataPointer {
                 data: data_pointer2,
             } = data_pointer2;
 
@@ -165,7 +165,7 @@ impl<Data> UndirectedChannelPointer<Data> {
     pub fn destroy_immutable(
         self,
         data_pointer1: UndirectedDataPointer<Data>,
-        data_pointer2: impl IntoIterator<Item = ImmutableDataPointer<Data>>,
+        data_pointer2: impl IntoIterator<Item = ImmutableUndirectedDataPointer<Data>>,
     ) -> (Data, Data) {
         UndirectedChannel::destroy_immutable(self, data_pointer1, data_pointer2)
     }
@@ -182,35 +182,35 @@ impl<Data> UndirectedDataPointer<Data> {
         unsafe { &mut *self.data }
     }
 
-    pub fn into_immutable(self) -> ImmutableDataPointer<Data> {
-        ImmutableDataPointer {
+    pub fn into_immutable(self) -> ImmutableUndirectedDataPointer<Data> {
+        ImmutableUndirectedDataPointer {
             data: self.data as *const Data,
         }
     }
 }
 
-impl<Data> ImmutableDataPointer<Data> {
+impl<Data> ImmutableUndirectedDataPointer<Data> {
     /// Get a reference to the `Data` field pointed to by this pointer.
     pub fn get(&self, _key: &DataKey) -> &Data {
         unsafe { &*self.data }
     }
 }
 
-impl<Data> Clone for ImmutableDataPointer<Data> {
+impl<Data> Clone for ImmutableUndirectedDataPointer<Data> {
     fn clone(&self) -> Self {
         *self
     }
 }
 
-impl<Data> Copy for ImmutableDataPointer<Data> {}
+impl<Data> Copy for ImmutableUndirectedDataPointer<Data> {}
 
 unsafe impl<Data> Send for UndirectedChannelPointer<Data> {}
 unsafe impl<Data> Send for UndirectedDataPointer<Data> {}
-unsafe impl<Data> Send for ImmutableDataPointer<Data> {}
+unsafe impl<Data> Send for ImmutableUndirectedDataPointer<Data> {}
 
 unsafe impl<Data> Sync for UndirectedChannelPointer<Data> {}
 unsafe impl<Data> Sync for UndirectedDataPointer<Data> {}
-unsafe impl<Data> Sync for ImmutableDataPointer<Data> {}
+unsafe impl<Data> Sync for ImmutableUndirectedDataPointer<Data> {}
 
 /// Object-safe trait for [`UndirectedChannelPointer`]s.
 pub trait UndirectedSwapChannel: Send + Sync {
