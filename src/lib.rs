@@ -76,13 +76,13 @@ impl Drop for MasterKey {
     }
 }
 
-/// The key used for accessing a [DataPointer].
+/// The key used for accessing a data pointer, such as a [`ReadOnlyDataPointer`](directed::ReadOnlyDataPointer), a [`WriteOnlyDataPointer`](directed::WriteOnlyDataPointer), or a [`DataPointer`](undirected::UndirectedDataPointer).
 /// Only one can simultaneously exist at any point, and only if there is no channel key.
 pub struct DataKey<'master_key> {
     scope: PhantomData<&'master_key mut MasterKey>,
 }
 
-/// The key used for accessing a [ChannelPointer].
+/// The key used for accessing a channel pointer, such as a [`DirectedChannelPointer`](directed::DirectedChannelPointer) or an [`UndirectedChannelPointer`](undirected::UndirectedChannelPointer).
 /// Only one can simultaneously exist at any point, and only if there is no data key.
 pub struct ChannelKey<'master_key> {
     scope: PhantomData<&'master_key mut MasterKey>,
