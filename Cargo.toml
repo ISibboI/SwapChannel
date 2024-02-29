@@ -2,6 +2,7 @@
 name = "two_phase_channel"
 description = "A safe lock-free parallel communication channel by statically forbidding conflicting accesses"
 authors = ["Sebastian Schmidt <isibboi@gmail.com>"]
+repository = "https://github.com/ISibboI/two_phase_channel"
 version = "0.1.0"
 edition = "2021"
 license = "BSD-2-Clause"

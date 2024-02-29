@@ -1,4 +1,4 @@
-//! A directed swap channel.
+//! A directed two-phase channel.
 //! The channel provides two data pointers, one of which is read-only.
 //! Data is only transmitted from the writable end to the readable end.
 
@@ -213,12 +213,12 @@ unsafe impl<Data> Sync for ReadOnlyDataPointer<Data> {}
 unsafe impl<Data> Sync for WritableDataPointer<Data> {}
 
 /// Object-safe trait for [`DirectedChannelPointer`]s.
-pub trait DirectedSwapChannel: Send + Sync {
+pub trait IDirectedChannel: Send + Sync {
     /// Perform the [`DirectedChannelPointer::flush`] operation.
     fn flush(&mut self, channel_key: &ChannelKey);
 }
 
-impl<Data: Clone> DirectedSwapChannel for DirectedChannelPointer<Data> {
+impl<Data: Clone> IDirectedChannel for DirectedChannelPointer<Data> {
     fn flush(&mut self, channel_key: &ChannelKey) {
         DirectedChannelPointer::flush(self, channel_key);
     }
@@ -227,7 +227,7 @@ impl<Data: Clone> DirectedSwapChannel for DirectedChannelPointer<Data> {
 #[cfg(test)]
 mod tests {
     use crate::{
-        directed::{DirectedChannel, DirectedSwapChannel},
+        directed::{DirectedChannel, IDirectedChannel},
         MasterKey,
     };
 
@@ -260,7 +260,7 @@ mod tests {
         let mut master_key = unsafe { MasterKey::create_unlimited() };
         let (mut channel, read_only_data_pointer, writable_data_pointer) =
             DirectedChannel::create(1, 2);
-        let dyn_channel: &mut dyn DirectedSwapChannel = &mut channel;
+        let dyn_channel: &mut dyn IDirectedChannel = &mut channel;
 
         dyn_channel.flush(&master_key.get_channel_key());
         assert_eq!(*read_only_data_pointer.get(&master_key.get_data_key()), 2);

@@ -1,4 +1,4 @@
-//! An undirected swap channel.
+//! An undirected two-phase channel.
 //! Both instances of the transmitted data are readable and writable,
 //! and the data is swapped instead of being sent only in one direction.
 

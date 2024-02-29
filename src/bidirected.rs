@@ -1,5 +1,5 @@
-//! A bidirected swap channel.
-//! This is a wrapper around two directed swap channels.
+//! A bidirected two-phase channel.
+//! This is a wrapper around two directed two-phase channels.
 //! Each endpoint has an input and an output pointer,
 //! where the input of one endpoint is connected to the output of the other endpoint via a directed channel.
 
@@ -182,12 +182,12 @@ unsafe impl<Data1, Data2> Sync for BidirectedChannelPointer<Data1, Data2> {}
 unsafe impl<Input, Output> Sync for BidirectedDataPointer<Input, Output> {}
 
 /// Object-safe trait for [`BidirectedChannelPointer`]s.
-pub trait BidirectedSwapChannel: Send + Sync {
+pub trait IBidirectedChannel: Send + Sync {
     /// Perform the [`BidirectedChannelPointer::flush`] operation.
     fn flush(&mut self, channel_key: &ChannelKey);
 }
 
-impl<Data1: Clone, Data2: Clone> BidirectedSwapChannel for BidirectedChannelPointer<Data1, Data2> {
+impl<Data1: Clone, Data2: Clone> IBidirectedChannel for BidirectedChannelPointer<Data1, Data2> {
     fn flush(&mut self, channel_key: &ChannelKey) {
         BidirectedChannelPointer::flush(self, channel_key);
     }
@@ -196,7 +196,7 @@ impl<Data1: Clone, Data2: Clone> BidirectedSwapChannel for BidirectedChannelPoin
 #[cfg(test)]
 mod tests {
     use crate::{
-        bidirected::{BidirectedChannel, BidirectedSwapChannel},
+        bidirected::{BidirectedChannel, IBidirectedChannel},
         MasterKey,
     };
 
@@ -231,7 +231,7 @@ mod tests {
         let mut master_key = unsafe { MasterKey::create_unlimited() };
         let (mut channel_pointer, mut data_pointer1, mut data_pointer2) =
             BidirectedChannel::create(1, 2, 3, 4);
-        let dyn_channel_pointer: &mut dyn BidirectedSwapChannel = &mut channel_pointer;
+        let dyn_channel_pointer: &mut dyn IBidirectedChannel = &mut channel_pointer;
 
         dyn_channel_pointer.flush(&master_key.get_channel_key());
         assert_eq!(*data_pointer1.get_input(&master_key.get_data_key()), 2);
