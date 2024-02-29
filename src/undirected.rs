@@ -1,3 +1,7 @@
+//! An undirected swap channel.
+//! Both instances of the transmitted data are readable and writable,
+//! and the data is swapped instead of being sent only in one direction.
+
 use std::mem;
 
 use crate::{ChannelKey, DataKey};
@@ -147,7 +151,7 @@ impl<Data: Clone> UndirectedChannel<Data> {
 
 impl<Data> UndirectedChannelPointer<Data> {
     /// Swap the two `Data` fields in the undirected channel.
-    pub fn swap(&mut self, _key: &ChannelKey) {
+    pub fn swap(&mut self, #[allow(unused)] channel_key: &ChannelKey) {
         let channel: &mut UndirectedChannel<Data> = &mut self.channel;
         mem::swap(&mut channel.data1, &mut channel.data2);
     }
@@ -173,12 +177,12 @@ impl<Data> UndirectedChannelPointer<Data> {
 
 impl<Data> UndirectedDataPointer<Data> {
     /// Get a reference to the `Data` field pointed to by this pointer.
-    pub fn get(&self, _key: &DataKey) -> &Data {
+    pub fn get(&self, #[allow(unused)] data_key: &DataKey) -> &Data {
         unsafe { &*self.data }
     }
 
     /// Get a mutable reference to the `Data` field pointed to by this pointer.
-    pub fn get_mut(&mut self, _key: &DataKey) -> &mut Data {
+    pub fn get_mut(&mut self, #[allow(unused)] data_key: &DataKey) -> &mut Data {
         unsafe { &mut *self.data }
     }
 
@@ -191,7 +195,7 @@ impl<Data> UndirectedDataPointer<Data> {
 
 impl<Data> ImmutableUndirectedDataPointer<Data> {
     /// Get a reference to the `Data` field pointed to by this pointer.
-    pub fn get(&self, _key: &DataKey) -> &Data {
+    pub fn get(&self, #[allow(unused)] data_key: &DataKey) -> &Data {
         unsafe { &*self.data }
     }
 }

@@ -4,6 +4,7 @@ use std::sync::atomic::Ordering;
 
 static MASTER_KEY_EXISTS: AtomicBool = AtomicBool::new(false);
 
+pub mod bidirected;
 pub mod directed;
 pub mod undirected;
 
@@ -76,7 +77,7 @@ impl Drop for MasterKey {
     }
 }
 
-/// The key used for accessing a data pointer, such as a [`ReadOnlyDataPointer`](directed::ReadOnlyDataPointer), a [`WriteOnlyDataPointer`](directed::WriteOnlyDataPointer), or a [`DataPointer`](undirected::UndirectedDataPointer).
+/// The key used for accessing a data pointer, such as a [`ReadOnlyDataPointer`](directed::ReadOnlyDataPointer), a [`WritableDataPointer`](directed::WritableDataPointer), or a [`DataPointer`](undirected::UndirectedDataPointer).
 /// Only one can simultaneously exist at any point, and only if there is no channel key.
 pub struct DataKey<'master_key> {
     scope: PhantomData<&'master_key mut MasterKey>,
