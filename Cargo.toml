@@ -1,8 +1,8 @@
 [package]
-name = "swap_channel"
-description = "A safe lock-free parallel communication channel based on mem::swap"
+name = "two_phase_channel"
+description = "A safe lock-free parallel communication channel by statically forbidding conflicting accesses"
 authors = ["Sebastian Schmidt <isibboi@gmail.com>"]
-version = "0.3.0"
+version = "0.1.0"
 edition = "2021"
 license = "BSD-2-Clause"
 
