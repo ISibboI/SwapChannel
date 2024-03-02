@@ -33,6 +33,7 @@ pub struct BidirectedChannelPointer<Data1, Data2> {
 /// and the `output` pointer points to the writable end of the other directed channel.
 ///
 /// This type should always be destroyed via the [BidirectedChannel::destroy] or [BidirectedChannelPointer::destroy] method to ensure soundness (at runtime).
+#[derive(Debug)]
 pub struct BidirectedDataPointer<Input, Output> {
     input: ReadOnlyDataPointer<Input>,
     output: WritableDataPointer<Output>,
